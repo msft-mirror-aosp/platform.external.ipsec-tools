@@ -124,6 +124,7 @@ const char *android_hook(char **envp)
 #endif
 
 extern void setup(int argc, char **argv);
+extern void shutdown_session();
 
 static int monitors;
 static void (*callbacks[10])(int fd);
@@ -176,7 +177,6 @@ int main(int argc, char **argv)
 
 #ifdef ANDROID_CHANGES
     shutdown(control, SHUT_WR);
-    setuid(AID_VPN);
 #endif
 
     while (1) {
@@ -188,6 +188,8 @@ int main(int argc, char **argv)
             for (i = 0; i < monitors; ++i) {
                 if (pollfds[i].revents & POLLHUP) {
                     do_plog(LLV_INFO, "Connection is closed\n", pollfds[i].fd);
+                    shutdown_session();
+
                     /* Wait for few seconds to consume late messages. */
                     sleep(5);
                     exit(1);
