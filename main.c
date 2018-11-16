@@ -103,7 +103,12 @@ static int android_get_control_and_arguments(int *argc, char ***argv)
 const char *android_hook(char **envp)
 {
     struct ifreq ifr = {.ifr_flags = IFF_TUN};
-    int tun = open("/dev/tun", 0);
+    int tun = open("/dev/tun", O_RDONLY | O_CLOEXEC);
+
+    if (tun == -1) {
+        do_plog(LLV_ERROR, "error opening /dev/tun: %s\n", strerror(errno));
+        exit(1);
+    }
 
     /* Android does not support INTERNAL_WINS4_LIST, so we just use it. */
     while (*envp && strncmp(*envp, "INTERNAL_WINS4_LIST=", 20)) {
@@ -117,6 +122,7 @@ const char *android_hook(char **envp)
         do_plog(LLV_ERROR, "Cannot allocate TUN: %s\n", strerror(errno));
         exit(1);
     }
+    close(tun);
     sprintf(*envp, "INTERFACE=%s", ifr.ifr_name);
     return "/etc/ppp/ip-up-vpn";
 }
