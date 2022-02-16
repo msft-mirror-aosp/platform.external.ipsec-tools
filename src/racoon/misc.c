@@ -74,10 +74,10 @@ bindump(buf0, len)
 
 int
 racoon_hexdump(buf0, len)
-	const void *buf0;
+	void *buf0;
 	size_t len;
 {
-	const unsigned char *buf = buf0;
+	caddr_t buf = (caddr_t)buf0;
 	size_t i;
 
 	for (i = 0; i < len; i++) {
@@ -85,7 +85,7 @@ racoon_hexdump(buf0, len)
 			printf("\n");
 		if (i % 4 == 0)
 			printf(" ");
-		printf("%02x", buf[i]);
+		printf("%02x", (unsigned char)buf[i]);
 	}
 	printf("\n");
 
